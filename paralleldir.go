@@ -29,17 +29,14 @@ func (t *treeNode) ToString() string {
 	return t.toStringWithIndent("")
 }
 
-// TODO: Review and understand this - was vibe-coded
 func (t *treeNode) toStringWithIndent(indent string) string {
 	var result strings.Builder
+
 	result.WriteString(indent + t.name + "\n")
-	for i, child := range t.children {
-		if i == len(t.children)-1 {
-			result.WriteString(child.toStringWithIndent(indent + "└── "))
-		} else {
-			result.WriteString(child.toStringWithIndent(indent + "├── "))
-		}
+	for _, child := range t.children {
+		result.WriteString(child.toStringWithIndent(indent + "\t"))
 	}
+
 	return result.String()
 }
 
