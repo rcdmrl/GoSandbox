@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -30,15 +31,16 @@ func (t *treeNode) ToString() string {
 
 // TODO: Review and understand this - was vibe-coded
 func (t *treeNode) toStringWithIndent(indent string) string {
-	result := indent + t.name + "\n"
+	var result strings.Builder
+	result.WriteString(indent + t.name + "\n")
 	for i, child := range t.children {
 		if i == len(t.children)-1 {
-			result += child.toStringWithIndent(indent + "└── ")
+			result.WriteString(child.toStringWithIndent(indent + "└── "))
 		} else {
-			result += child.toStringWithIndent(indent + "├── ")
+			result.WriteString(child.toStringWithIndent(indent + "├── "))
 		}
 	}
-	return result
+	return result.String()
 }
 
 func NewParallelDir(baseDir string) *ParallelDir {
