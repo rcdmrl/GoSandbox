@@ -65,27 +65,26 @@ func (pd *ParallelDir) baseDir() string {
 func (pd *ParallelDir) Run() {
 	var wg sync.WaitGroup
 	fmt.Println("Starting on", pd.baseDir())
-	listDirsRecursively(pd.Root, &wg)
+	pd.Root.listDirsRecursively(&wg)
 	wg.Wait()
 	//fmt.Println(pd.Root.ToString())
 	fmt.Println(pd.ToJson())
 }
 
-func listDirsRecursively(node *treeNode, wg *sync.WaitGroup) {
-	files, err := os.ReadDir(node.Name)
+func (t *treeNode) listDirsRecursively(wg *sync.WaitGroup) {
+	files, err := os.ReadDir(t.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	for _, file := range files {
 		if file.IsDir() {
 			childNode := &treeNode{
-				Name:     filepath.Join(node.Name, file.Name()),
+				Name:     filepath.Join(t.Name, file.Name()),
 				Children: make([]*treeNode, 0),
 			}
-			node.SafeAppendChild(childNode)
+			t.SafeAppendChild(childNode)
 			wg.Go(func() {
-				listDirsRecursively(childNode, wg)
+				childNode.listDirsRecursively(wg)
 			})
 		}
 	}
