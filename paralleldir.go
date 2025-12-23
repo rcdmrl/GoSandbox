@@ -15,6 +15,13 @@ type ParallelDir struct {
 type treeNode struct {
 	name     string
 	children []*treeNode
+	mu       sync.Mutex
+}
+
+func (t *treeNode) SafeAppendChild(childNode *treeNode) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.children = append(t.children, childNode)
 }
 
 func (t *treeNode) ToString() string {
@@ -67,7 +74,7 @@ func listDirsRecursively(node *treeNode, wg *sync.WaitGroup) {
 				name:     filepath.Join(node.name, file.Name()),
 				children: make([]*treeNode, 0),
 			}
-			node.children = append(node.children, childNode)
+			node.SafeAppendChild(childNode)
 			wg.Go(func() {
 				listDirsRecursively(childNode, wg)
 			})
