@@ -47,15 +47,28 @@ func (pd *ParallelDir) appendChildren() {
 }
 
 func (pd *ParallelDir) Run() {
+	// WG for the parallel traversal
 	var wg sync.WaitGroup
+	// WG because the listDirsRecursively might finish, the wg.Wait() "unlocks" and the app might finish
+	// before the updater manages to read all messages.
+	var updaterWG sync.WaitGroup
 	fmt.Println("Starting on", pd.baseDir())
+
+	// pd.appendChildren() needs to be running before listDirsRecursively writes to chan
+	updaterWG.Add(1)
+	go func() {
+		updaterWG.Done()
+		pd.appendChildren()
+	}()
+
 	pd.Root.listDirsRecursively(&wg, pd.nodeUpdateChan)
-	go pd.appendChildren()                // single goroutine to read from the update channel and update the children
-	wg.Wait()                             // waiting for all the parallel traversal goroutines
-	close(pd.nodeUpdateChan)              // hopefully this will "free" the goroutine handling the children update TODO: do I need a waitgroup for this as well?
-	fmt.Println(pd.Root.toString())       // displaying tree as text
-	fmt.Println(strings.Repeat("-", 100)) // separator
-	fmt.Println(pd.toJson())              // displaying tree as JSON
+	wg.Wait()
+	close(pd.nodeUpdateChan) // closing chan after the parallel dir traversal finishes
+	updaterWG.Wait()         // Waiting after the parallel dir traversal finishes
+
+	fmt.Println(pd.Root.toString())
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println(pd.toJson())
 }
 
 func (pd *ParallelDir) toJson() string {
