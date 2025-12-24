@@ -1,0 +1,1 @@
+Like [v1](../v1/readme.md) but tries to tidy up the code based on this example: https://github.com/charmbracelet/huh/blob/main/examples/conditional/main.go (See the "meh" section from the [v1 readme](../v1/readme.md))
