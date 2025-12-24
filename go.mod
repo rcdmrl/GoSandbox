@@ -1,3 +1,3 @@
 module github.com/rcdmrl/go-sandbox
 
-go 1.25
+go 1.25.5
